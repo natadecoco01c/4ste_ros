@@ -51,17 +51,17 @@ public:
 	Mr1CanNode(void);
 
 private:
-	void base_CmdCallback(const std_msgs::UInt16::ConstPtr& msg);
-	void motor0CmdVelCallback(const std_msgs::Float64::ConstPtr& msg);
-	void motor1CmdVelCallback(const std_msgs::Float64::ConstPtr& msg);
-	void motor2CmdVelCallback(const std_msgs::Float64::ConstPtr& msg);
-	void motor3CmdVelCallback(const std_msgs::Float64::ConstPtr& msg); //3追加
+	void base_CmdCallback(const std_msgs::UInt8::ConstPtr& msg); //16から8に αとβ両方使うならわけないとあかんのかな
+	void motor0CmdVelCallback(const std_msgs::Float32::ConstPtr& msg);
+	void motor1CmdVelCallback(const std_msgs::Float32::ConstPtr& msg);
+	void motor2CmdVelCallback(const std_msgs::Float32::ConstPtr& msg);
+	void motor3CmdVelCallback(const std_msgs::Float32::ConstPtr& msg); //3追加
 
 //	void base_steer_CmdCallback(const std_msgs::UInt16::ConstPtr& msg); //steer pos 追加
-	void motor0CmdPosCallback(const std_msgs::Float64::ConstPtr& msg);
-	void motor1CmdPosCallback(const std_msgs::Float64::ConstPtr& msg);
-	void motor2CmdPosCallback(const std_msgs::Float64::ConstPtr& msg);
-	void motor3CmdPosCallback(const std_msgs::Float64::ConstPtr& msg);
+	void motor0CmdPosCallback(const std_msgs::Float32::ConstPtr& msg);
+	void motor1CmdPosCallback(const std_msgs::Float32::ConstPtr& msg);
+	void motor2CmdPosCallback(const std_msgs::Float32::ConstPtr& msg);
+	void motor3CmdPosCallback(const std_msgs::Float32::ConstPtr& msg);
 
 //	void launcherCmdCallback(const std_msgs::UInt16::ConstPtr& msg);
 //	void loadmotorCmdCallback(const std_msgs::UInt8::ConstPtr& msg);
@@ -123,12 +123,12 @@ private:
 	static constexpr uint16_t id_base_wheel3_cmd = 0x4aa;
 	static constexpr uint16_t id_base_wheel3_cmd_vel = 0xf04; //3追加
 
-	static constexpr uint16_t id_base_steer0_cmd = 0x4f8; 	//idは必ず後で変える
-	static constexpr uint16_t id_base_steer0_cmd_pos = 0xf05;
-	static constexpr uint16_t id_base_steer0_status = 0x4fa;
-	static constexpr uint16_t id_base_steer1_cmd = 0x4fb;
-	static constexpr uint16_t id_base_steer1_cmd_pos = 0xf06;
-	static constexpr uint16_t id_base_steer1_status = 0x4fa;
+	static constexpr uint16_t id_base_steer0_cmd = 0x4b8; 	//idは必ず後で変える
+	static constexpr uint16_t id_base_steer0_cmd_pos = 0x4b9;
+	static constexpr uint16_t id_base_steer0_status = 0x4bb;
+	static constexpr uint16_t id_base_steer1_cmd = 0x4d0;
+	static constexpr uint16_t id_base_steer1_cmd_pos = 0x4d1;
+	static constexpr uint16_t id_base_steer1_status = 0x4d3;
 	static constexpr uint16_t id_base_steer2_cmd = 0x4f8;
 	static constexpr uint16_t id_base_steer2_cmd_pos = 0xf07;
 	static constexpr uint16_t id_base_steer2_status = 0x4fa;
@@ -158,33 +158,33 @@ Mr1CanNode::Mr1CanNode(void) {
 			> ("base/odom/yaw", 10);
 	_base_conf_pub = _nh.advertise < std_msgs::UInt8 > ("base/conf", 10);
 
-	_base_cmd_sub = _nh.subscribe < std_msgs::UInt16 //steer統合
+	_base_cmd_sub = _nh.subscribe < std_msgs::UInt8 //steer統合 16->8
 			> ("base/cmd", 10, &Mr1CanNode::base_CmdCallback, this);
 
 	_base_motor0_cmd_vel_sub =
-			_nh.subscribe < std_msgs::Float64
+			_nh.subscribe < std_msgs::Float32
 					> ("base/motor0_cmd_vel", 10, &Mr1CanNode::motor0CmdVelCallback, this);
 	_base_motor1_cmd_vel_sub =
-			_nh.subscribe < std_msgs::Float64
+			_nh.subscribe < std_msgs::Float32
 					> ("base/motor1_cmd_vel", 10, &Mr1CanNode::motor1CmdVelCallback, this);
 	_base_motor2_cmd_vel_sub =
-			_nh.subscribe < std_msgs::Float64
+			_nh.subscribe < std_msgs::Float32
 					> ("base/motor2_cmd_vel", 10, &Mr1CanNode::motor2CmdVelCallback, this);
 	_base_motor3_cmd_vel_sub =
-			_nh.subscribe < std_msgs::Float64
+			_nh.subscribe < std_msgs::Float32
 					> ("base/motor3_cmd_vel", 10, &Mr1CanNode::motor3CmdVelCallback, this); //3追加
 
 	_base_steer0_cmd_pos_sub =
-			_nh.subscribe < std_msgs::Float64
+			_nh.subscribe < std_msgs::Float32
 					> ("base/motor0_cmd_pos", 10, &Mr1CanNode::motor0CmdPosCallback, this);
 	_base_steer1_cmd_pos_sub =
-			_nh.subscribe < std_msgs::Float64
+			_nh.subscribe < std_msgs::Float32
 					> ("base/motor1_cmd_pos", 10, &Mr1CanNode::motor1CmdPosCallback, this);
 	_base_steer2_cmd_pos_sub =
-			_nh.subscribe < std_msgs::Float64
+			_nh.subscribe < std_msgs::Float32
 					> ("base/motor2_cmd_pos", 10, &Mr1CanNode::motor2CmdPosCallback, this);
 	_base_steer3_cmd_pos_sub =
-			_nh.subscribe < std_msgs::Float64
+			_nh.subscribe < std_msgs::Float32
 					> ("base/motor3_cmd_pos", 10, &Mr1CanNode::motor3CmdPosCallback, this);
 //	_load_motor_status_pub = _nh.advertise < std_msgs::UInt8
 //			> ("motor_status", 10);
@@ -204,7 +204,7 @@ Mr1CanNode::Mr1CanNode(void) {
 //					> ("expand_motor_cmd_pos", 10, &Mr1CanNode::expandmotorCmdPosCallback, this);
 }
 
-void Mr1CanNode::base_CmdCallback(const std_msgs::UInt16::ConstPtr& msg) {
+void Mr1CanNode::base_CmdCallback(const std_msgs::UInt8::ConstPtr& msg) { //16->8
 	this->sendData(id_base_wheel0_cmd, msg->data);
 	this->sendData(id_base_wheel1_cmd, msg->data);
 	this->sendData(id_base_wheel2_cmd, msg->data);
@@ -215,36 +215,36 @@ void Mr1CanNode::base_CmdCallback(const std_msgs::UInt16::ConstPtr& msg) {
 	this->sendData(id_base_steer3_cmd, msg->data);//3追加
 }
 
-void Mr1CanNode::motor0CmdVelCallback(const std_msgs::Float64::ConstPtr& msg) {
+void Mr1CanNode::motor0CmdVelCallback(const std_msgs::Float32::ConstPtr& msg) {
 	this->sendData(id_base_wheel0_cmd_vel, msg->data);
 }
 
-void Mr1CanNode::motor1CmdVelCallback(const std_msgs::Float64::ConstPtr& msg) {
+void Mr1CanNode::motor1CmdVelCallback(const std_msgs::Float32::ConstPtr& msg) {
 	this->sendData(id_base_wheel1_cmd_vel, msg->data);
 }
 
-void Mr1CanNode::motor2CmdVelCallback(const std_msgs::Float64::ConstPtr& msg) {
+void Mr1CanNode::motor2CmdVelCallback(const std_msgs::Float32::ConstPtr& msg) {
 	this->sendData(id_base_wheel2_cmd_vel, msg->data);
 }
 
-void Mr1CanNode::motor3CmdVelCallback(const std_msgs::Float64::ConstPtr& msg) //3追加
+void Mr1CanNode::motor3CmdVelCallback(const std_msgs::Float32::ConstPtr& msg) //3追加
 		{
 	this->sendData(id_base_wheel3_cmd_vel, msg->data);
 }
 
-void Mr1CanNode::motor0CmdPosCallback(const std_msgs::Float64::ConstPtr& msg) {
+void Mr1CanNode::motor0CmdPosCallback(const std_msgs::Float32::ConstPtr& msg) {
 	this->sendData(id_base_steer0_cmd_pos, msg->data);
 }
 
-void Mr1CanNode::motor1CmdPosCallback(const std_msgs::Float64::ConstPtr& msg) {
+void Mr1CanNode::motor1CmdPosCallback(const std_msgs::Float32::ConstPtr& msg) {
 	this->sendData(id_base_steer1_cmd_pos, msg->data);
 }
 
-void Mr1CanNode::motor2CmdPosCallback(const std_msgs::Float64::ConstPtr& msg) {
+void Mr1CanNode::motor2CmdPosCallback(const std_msgs::Float32::ConstPtr& msg) {
 	this->sendData(id_base_steer2_cmd_pos, msg->data);
 }
 
-void Mr1CanNode::motor3CmdPosCallback(const std_msgs::Float64::ConstPtr& msg) //3追加
+void Mr1CanNode::motor3CmdPosCallback(const std_msgs::Float32::ConstPtr& msg) //3追加
 		{
 	this->sendData(id_base_steer3_cmd_pos, msg->data);
 }
